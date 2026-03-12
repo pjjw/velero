@@ -242,7 +242,11 @@ func (n *NodeAgentConfigTestCase) Backup() error {
 	// In backup, only the second element of LoadAffinity array should be used.
 	expectedAffinity := velerokubeutil.ToSystemAffinity(n.nodeAgentConfigs.LoadAffinity[1], nil)
 
-	Expect(backupPodList.Items[0].Spec.Affinity).To(Equal(expectedAffinity))
+	// From 1.18.1, Velero adds some default affinity in the backup/restore pod,
+	// so we can't directly compare the whole affinity,
+	// but we can verify if the expected affinity is contained in the pod affinity.
+	Expect(backupPodList.Items[0].Spec.Affinity.String()).
+		To(ContainSubstring(expectedAffinity.String()))
 
 	fmt.Println("backupPod content verification completed successfully.")
 
@@ -319,7 +323,11 @@ func (n *NodeAgentConfigTestCase) Restore() error {
 	// In restore, only the first element of LoadAffinity array should be used.
 	expectedAffinity := velerokubeutil.ToSystemAffinity(n.nodeAgentConfigs.LoadAffinity[0], nil)
 
-	Expect(restorePodList.Items[0].Spec.Affinity).To(Equal(expectedAffinity))
+	// From 1.18.1, Velero adds some default affinity in the backup/restore pod,
+	// so we can't directly compare the whole affinity,
+	// but we can verify if the expected affinity is contained in the pod affinity.
+	Expect(restorePodList.Items[0].Spec.Affinity.String()).
+		To(ContainSubstring(expectedAffinity.String()))
 
 	fmt.Println("restorePod content verification completed successfully.")
 
